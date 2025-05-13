@@ -39,18 +39,17 @@ def resolve_config_path(path: str) -> Callable[[Wildcards], str]:
         # configs.  We could achieve the same behaviour with a symlink
         # (defaults/defaults → .) but that seems less clear.
         if path.startswith("defaults/"):
-            defaults_path = os.path.join(workflow.basedir, path)
+            defaults_path = os.path.join(workflow.basedir, expanded_path)
         else:
-            defaults_path = os.path.join(workflow.basedir, "defaults", path)
+            defaults_path = os.path.join(workflow.basedir, "defaults", expanded_path)
 
-        expanded_defaults_path = expand(defaults_path, **wildcards)[0]
-        if os.path.exists(expanded_defaults_path):
-            return expanded_defaults_path
+        if os.path.exists(defaults_path):
+            return defaults_path
 
         raise InvalidConfigError(f"""Unable to resolve config provided path.
         Checked for the following files:
         1. {expanded_path!r}
-        2. {expanded_defaults_path!r}
+        2. {defaults_path!r}
         """)
 
     return _resolve_config_path
