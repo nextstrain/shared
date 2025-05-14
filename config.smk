@@ -5,13 +5,14 @@ workflow configs.
 import os.path
 from collections.abc import Callable
 from snakemake.io import Wildcards
+from typing import Optional, List
 
 
 class InvalidConfigError(Exception):
     pass
 
 
-def resolve_config_path(path: str) -> Callable[[Wildcards], str]:
+def resolve_config_path(path: str, other_prefixes: Optional[List[str]] = None) -> Callable[[Wildcards], str]:
     """
     Resolve a relative *path* given in a configuration value.
 
@@ -27,6 +28,9 @@ def resolve_config_path(path: str) -> Callable[[Wildcards], str]:
 
     Will always try to resolve *path* or the default path after expanding
     wildcards with Snakemake's `expand` functionality.
+
+    If *other_prefixes* are provided, then will also try to resolve *path*
+    relative to the provided prefixes if the *path* and default path do not exist.
     """
     global workflow
 
@@ -46,10 +50,18 @@ def resolve_config_path(path: str) -> Callable[[Wildcards], str]:
         if os.path.exists(defaults_path):
             return defaults_path
 
-        raise InvalidConfigError(f"""Unable to resolve config provided path.
-        Checked for the following files:
-        1. {expanded_path!r}
-        2. {defaults_path!r}
-        """)
+        checked_paths = [expanded_path, defaults_path]
+        if other_prefixes:
+            for prefix in other_prefixes:
+                prefixed_path = os.path.join(prefix, expanded_path)
+
+                if os.path.exists(prefixed_path):
+                    return prefixed_path
+
+                checked_paths.append(prefixed_path)
+
+        raise InvalidConfigError(
+            "Unable to resolve config provided path. Checked for the following files:\n" + \
+            "\n".join("\t" + f"{index + 1}. {path!r}" for index, path in enumerate(checked_paths)))
 
     return _resolve_config_path
