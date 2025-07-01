@@ -36,12 +36,14 @@ if __name__ == '__main__':
         metadata = pd.read_csv(args.metadata, delimiter='\t')
         for name, trait in assignment.items():
             if name in metadata:
-                subset_present = [x for x in assignment[name] if x in metadata[name].unique()]
-                assignment[name] = subset_present
-            if name in metadata and 'focal' in metadata:
-                focal_list = metadata.loc[metadata['focal'], name].unique()
-                subset_focal = [x for x in assignment[name] if x in focal_list]
-                assignment[name] = subset_focal
+                if 'focal' in metadata:
+                    focal_list = metadata.loc[metadata['focal'], name].unique()
+                    subset_focal = [x for x in assignment[name] if x in focal_list]
+                    assignment[name] = subset_focal
+                else: # no 'focal' present
+                    subset_present = [x for x in assignment[name] if x in metadata[name].unique()]
+                    assignment[name] = subset_present
+
 
     schemes = {}
     counter = 0
