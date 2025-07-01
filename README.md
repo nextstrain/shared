@@ -96,6 +96,7 @@ Scripts for supporting workflow automation that don’t really belong in any of 
 - [trigger](scripts/trigger) - Triggers downstream GitHub Actions via the GitHub API using repository_dispatch events.
 - [trigger-on-new-data](scripts/trigger-on-new-data) - Triggers downstream GitHub Actions if the provided `upload-to-s3` outputs do not contain the `identical_file_message`
   A hacky way to ensure that we only trigger downstream phylogenetic builds if the S3 objects have been updated.
+- [assign-colors.py](scripts/assign-colors.py) - Generate colors.tsv for augur export based on ordering, color schemes, and what exists in the metadata. Used in the phylogenetic or nextclade workflows.
 
 NCBI interaction scripts that are useful for fetching public metadata and sequences.
 
