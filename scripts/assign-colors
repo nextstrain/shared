@@ -21,7 +21,15 @@ if __name__ == '__main__':
     with open(args.ordering) as f:
         for line in f.readlines():
             array = line.strip().split("\t")
-            if len(array) == 2:
+            # Ignore empty lines or commented lines
+            if not array or array[0].startswith('#'):
+                continue
+            # Throw a warning if encountering a line not matching the expected number of columns, ignore line
+            elif len(array)!=2:
+                print("WARNING: Could not decode color ordering line: " + "\t".join(array))
+                continue
+            # Otherwise, process color ordering where we expect 2 columns: name, traits
+            else:
                 name = array[0]
                 trait = array[1]
                 if name not in assignment:
