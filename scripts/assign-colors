@@ -26,7 +26,7 @@ if __name__ == '__main__':
                 continue
             # Throw a warning if encountering a line not matching the expected number of columns, ignore line
             elif len(array)!=2:
-                print("WARNING: Could not decode color ordering line: " + "\t".join(array))
+                print(f"WARNING: Could not decode color ordering line: {line}")
                 continue
             # Otherwise, process color ordering where we expect 2 columns: name, traits
             else:
