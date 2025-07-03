@@ -7,14 +7,14 @@ import pandas as pd
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        description="Assign colors based on ordering",
+        description="Assign colors based on defined ordering of traits.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
 
-    parser.add_argument('--ordering', type=str, required=True, help="input ordering file")
-    parser.add_argument('--color-schemes', type=str, required=True, help="input color schemes file")
-    parser.add_argument('--metadata', type=str, help="if provided, restrict colors to only those found in metadata")
-    parser.add_argument('--output', type=str, required=True, help="output colors tsv")
+    parser.add_argument('--ordering', type=str, required=True, help="Input TSV file defining the color ordering where the first column is the field and the second column is the trait in that field. Comments and blank lines are ignored.")
+    parser.add_argument('--color-schemes', type=str, required=True, help="Input color schemes where each line is a different color scheme separated by tabs.")
+    parser.add_argument('--metadata', type=str, help="If provided, restrict colors to only those traits found in metadata.")
+    parser.add_argument('--output', type=str, required=True, help="Output colors TSV file to be passed to augur export.")
     args = parser.parse_args()
 
     assignment = {}
