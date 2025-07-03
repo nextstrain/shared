@@ -22,7 +22,7 @@ if __name__ == '__main__':
         for line in f.readlines():
             array = line.strip().split("\t")
             # Ignore empty lines or commented lines
-            if not array or array[0].startswith('#'):
+            if not array or not array[0] or array[0].startswith('#'):
                 continue
             # Throw a warning if encountering a line not matching the expected number of columns, ignore line
             elif len(array)!=2:
