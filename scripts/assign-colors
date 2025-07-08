@@ -20,8 +20,9 @@ if __name__ == '__main__':
         help="Input color schemes where each line is a different color scheme separated by tabs.")
     parser.add_argument('--metadata', type=str,
         help="""If provided, restrict colors to only those traits found in
-        metadata. If the metadata includes a 'focal' column, then restrict colors
-        to traits for rows where 'focal' is set to True.""")
+        metadata. If the metadata includes a 'focal' column that only contains
+        boolean values, then restrict colors to traits for rows where 'focal'
+        is set to True.""")
     parser.add_argument('--output', type=str, required=True,
         help="Output colors TSV file to be passed to augur export.")
     args = parser.parse_args()
@@ -53,7 +54,7 @@ if __name__ == '__main__':
         metadata = pd.read_csv(args.metadata, delimiter='\t')
         for name, trait in assignment.items():
             if name in metadata:
-                if 'focal' in metadata:
+                if 'focal' in metadata and metadata['focal'].dtype == 'bool':
                     focal_list = metadata.loc[metadata['focal'], name].unique()
                     subset_focal = [x for x in assignment[name] if x in focal_list]
                     assignment[name] = subset_focal
