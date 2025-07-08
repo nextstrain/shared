@@ -14,7 +14,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--ordering', type=str, required=True,
         help="""Input TSV file defining the color ordering where the first
-        column is the field and the second column is the trait in that field.
+        column is the category and the second column is the trait in that category.
         Blank lines are ignored. Lines starting with '#' will be ignored as comments.""")
     parser.add_argument('--color-schemes', type=str, required=True,
         help="Input color schemes where each line is a different color scheme separated by tabs.")
@@ -23,6 +23,11 @@ if __name__ == '__main__':
         metadata. If the metadata includes a 'focal' column that only contains
         boolean values, then restrict colors to traits for rows where 'focal'
         is set to True.""")
+    parser.add_argument('--ignore-categories', type=str, default=[], nargs='*',
+        help="""Do not create colors for these categories even if they are
+        included in the metadata and ordering TSV. This is useful for ignoring
+        categories in specific builds even if they share the same default
+        ordering TSV.""")
     parser.add_argument('--output', type=str, required=True,
         help="Output colors TSV file to be passed to augur export.")
     args = parser.parse_args()
@@ -42,6 +47,8 @@ if __name__ == '__main__':
             else:
                 name = array[0]
                 trait = array[1]
+                if name in args.ignore_categories:
+                    continue
                 if name not in assignment:
                     assignment[name] = [trait]
                 else:
