@@ -28,6 +28,11 @@ if __name__ == '__main__':
         included in the metadata and ordering TSV. This is useful for ignoring
         categories in specific builds even if they share the same default
         ordering TSV.""")
+    parser.add_argument('--force-include-categories', type=str, default=[],nargs='*',
+        help="""Force include all color orderings for these categories even if
+        there are traits not included in the metadata TSV. This is useful for
+        creating colorings for traits not (yet) present in metadata to solve
+        bootstrapping issue.""")
     parser.add_argument('--output', type=str, required=True,
         help="Output colors TSV file to be passed to augur export.")
     args = parser.parse_args()
@@ -60,7 +65,7 @@ if __name__ == '__main__':
     if args.metadata:
         metadata = pd.read_csv(args.metadata, delimiter='\t')
         for name, trait in assignment.items():
-            if name in metadata:
+            if name in metadata and name not in args.force_include_categories:
                 if 'focal' in metadata and metadata['focal'].dtype == 'bool':
                     focal_list = metadata.loc[metadata['focal'], name].unique()
                     subset_focal = [x for x in assignment[name] if x in focal_list]
