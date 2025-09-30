@@ -22,7 +22,7 @@ Then add the latest shared scripts to the pathogen repo by running:
 git subrepo clone https://github.com/nextstrain/shared shared/vendored
 ```
 
-Any future updates of sahred scripts can be pulled in with:
+Any future updates of shared scripts can be pulled in with:
 
 ```
 git subrepo pull shared/vendored
