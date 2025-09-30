@@ -83,6 +83,8 @@ def write_config(path):
     """
     Write Snakemake's 'config' variable to a file.
     """
+    global config
+
     os.makedirs(os.path.dirname(path), exist_ok=True)
 
     with open(path, 'w') as f:
