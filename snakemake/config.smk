@@ -1,8 +1,10 @@
 """
-Shared functions to be used within a Snakemake workflow for parsing
+Shared functions to be used within a Snakemake workflow for handling
 workflow configs.
 """
-import os.path
+import os
+import sys
+import yaml
 from collections.abc import Callable
 from snakemake.io import Wildcards
 from typing import Optional
@@ -75,3 +77,15 @@ def resolve_config_path(path: str, defaults_dir: Optional[str] = None) -> Callab
             """), " " * 4))
 
     return _resolve_config_path
+
+
+def write_config(path):
+    """
+    Write Snakemake's 'config' variable to a file.
+    """
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+
+    with open(path, 'w') as f:
+        yaml.dump(config, f, sort_keys=False)
+
+    print(f"Saved current run config to {path!r}.", file=sys.stderr)
