@@ -11,6 +11,39 @@ from typing import Optional
 from textwrap import dedent, indent
 
 
+# Set search paths for Augur
+if "AUGUR_SEARCH_PATHS" in os.environ:
+    print(dedent(f"""\
+        Using existing search paths in AUGUR_SEARCH_PATHS:
+
+            {os.environ["AUGUR_SEARCH_PATHS"]!r}
+        """), file=sys.stderr)
+else:
+    # Note that this differs from the search paths used in
+    # resolve_config_path().
+    # This is the preferred default moving forwards, and the plan is to
+    # eventually update resolve_config_path() to use AUGUR_SEARCH_PATHS.
+    search_paths = [
+        # User analysis directory
+        Path.cwd(),
+
+        # Workflow defaults folder
+        Path(workflow.basedir) / "defaults",
+
+        # Workflow root (contains Snakefile)
+        Path(workflow.basedir),
+    ]
+
+    repo_root = Path(workflow.basedir) / ".."
+    if (repo_root / "nextstrain-pathogen.yaml").is_file():
+        search_paths.extend([
+            # Pathogen repo root
+            repo_root,
+        ])
+
+    os.environ["AUGUR_SEARCH_PATHS"] = ":".join(map(str, search_paths))
+
+
 class InvalidConfigError(Exception):
     pass
 
