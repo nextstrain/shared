@@ -41,6 +41,8 @@ else:
             repo_root,
         ])
 
+    search_paths = [path for path in search_paths if path.is_dir()]
+
     os.environ["AUGUR_SEARCH_PATHS"] = ":".join(map(str, search_paths))
 
 
