@@ -34,6 +34,10 @@ else:
         Path(workflow.basedir),
     ]
 
+    # This should work for majority of workflows, but we could consider doing a
+    # more thorough search for the nextstrain-pathogen.yaml. This would likely
+    # replicate how CLI searches for the root.¹
+    # ¹ <https://github.com/nextstrain/cli/blob/d5e184c5/nextstrain/cli/command/build.py#L413-L420>
     repo_root = Path(workflow.basedir) / ".."
     if (repo_root / "nextstrain-pathogen.yaml").is_file():
         search_paths.extend([
