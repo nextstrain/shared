@@ -6,7 +6,6 @@ import os
 import sys
 import yaml
 from collections.abc import Callable
-from snakemake.io import Wildcards
 from typing import Optional
 from textwrap import dedent, indent
 
@@ -54,7 +53,7 @@ class InvalidConfigError(Exception):
     pass
 
 
-def resolve_config_path(path: str, defaults_dir: Optional[str] = None) -> Callable[[Wildcards], str]:
+def resolve_config_path(path: str, defaults_dir: Optional[str] = None) -> Callable:
     """
     Resolve a relative *path* given in a configuration value. Will always try to
     resolve *path* after expanding wildcards with Snakemake's `expand` functionality.
