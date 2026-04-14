@@ -27,7 +27,7 @@ jobs:
         #   ...
         # ]
         run: |
-          matrix=$(gh api -X GET search/code \
+          shared_matrix=$(gh api -X GET search/code \
             -f q='org:nextstrain filename:.gitrepo "remote = https://github.com/nextstrain/shared"' \
             | jq -c '
                 .items
@@ -36,6 +36,28 @@ jobs:
                     "path": "\(.path | split("/")[0:-1] | join("/"))"
                   })
             ')
+
+          # I was unable to get the 'OR' syntax to work with the search/code API,
+          # so making a separate query for the old nextstrain/ingest repo name.
+          # -Jover, 14 Apr 2026.
+          ingest_matrix=$(gh api -X GET search/code \
+            -f q='org:nextstrain filename:.gitrepo "remote = https://github.com/nextstrain/ingest"' \
+            | jq -c '
+                .items
+                | map({
+                    "repo": "\(.repository.full_name)",
+                    "path": "\(.path | split("/")[0:-1] | join("/"))"
+                  })
+            ')
+
+          # There should not be any overlap between `shared_matrix` and `ingest_matrix`
+          # but deduplicating with `unique` just in case.
+          # -Jover, 14 Apr 2026.
+          matrix=$(jq -n \
+            --argjson matrix1 "$shared_matrix" \
+            --argjson matrix2 "$ingest_matrix" \
+            -c '$matrix1 + $matrix2 | sort_by(.repo, .path) | unique')
+
           echo "downstream-matrix=$matrix" | tee -a "$GITHUB_OUTPUT"
   update-downstream:
     name: update-downstream (${{ matrix.repo }}, ${{ matrix.path }})
