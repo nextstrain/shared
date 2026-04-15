@@ -50,13 +50,15 @@ jobs:
                   })
             ')
 
-          # There should not be any overlap between `shared_matrix` and `ingest_matrix`
-          # but deduplicating with `unique` just in case.
-          # -Jover, 14 Apr 2026.
+          # Deduplicate by repo since each repo should only have a single copy
+          # of the vendored repo. In cases where a repo has both,
+          # we are prioritizing the nextstrain/shared remote since that is
+          # the newer repo.
+          # -Jover, 15 Apr 2026.
           matrix=$(jq -n \
             --argjson matrix1 "$shared_matrix" \
             --argjson matrix2 "$ingest_matrix" \
-            -c '$matrix1 + $matrix2 | sort_by(.repo, .path) | unique')
+            -c '$matrix1 + $matrix2 | unique_by(.repo)')
 
           echo "downstream-matrix=$matrix" | tee -a "$GITHUB_OUTPUT"
   update-downstream:
