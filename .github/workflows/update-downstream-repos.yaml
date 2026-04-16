@@ -27,28 +27,26 @@ jobs:
         #   ...
         # ]
         run: |
-          shared_matrix=$(gh api -X GET search/code \
+          shared_matrix=$(gh api --paginate --slurp -X GET search/code \
             -f q='org:nextstrain filename:.gitrepo "remote = https://github.com/nextstrain/shared"' \
             | jq -c '
-                .items
-                | map({
-                    "repo": "\(.repository.full_name)",
-                    "path": "\(.path | split("/")[0:-1] | join("/"))"
-                  })
-            ')
+                [.[].items[] | {
+                  "repo": .repository.full_name,
+                  "path": (.path | split("/")[0:-1] | join("/"))
+                }]
+              ')
 
           # I was unable to get the 'OR' syntax to work with the search/code API,
           # so making a separate query for the old nextstrain/ingest repo name.
           # -Jover, 14 Apr 2026.
-          ingest_matrix=$(gh api -X GET search/code \
+          ingest_matrix=$(gh api --paginate --slurp -X GET search/code \
             -f q='org:nextstrain filename:.gitrepo "remote = https://github.com/nextstrain/ingest"' \
             | jq -c '
-                .items
-                | map({
-                    "repo": "\(.repository.full_name)",
-                    "path": "\(.path | split("/")[0:-1] | join("/"))"
-                  })
-            ')
+                [.[].items[] | {
+                  "repo": .repository.full_name,
+                  "path": (.path | split("/")[0:-1] | join("/"))
+                }]
+              ')
 
           # Deduplicate by repo since each repo should only have a single copy
           # of the vendored repo. In cases where a repo has both,
