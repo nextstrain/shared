@@ -95,20 +95,38 @@ jobs:
           git config user.name "${{ vars.GIT_USER_NAME_NEXTSTRAIN_BOT }}"
           git config user.email "${{ vars.GIT_USER_EMAIL_NEXTSTRAIN_BOT }}"
 
-          git switch -c "$branch"
+          # Default branch as the default parent
+          parent=$(git remote show origin | sed -n '/HEAD branch/s/.*: //p')
+          # Fetch remote branch if it exists and switch to the branch
+          # Otherwise just create the branch locally
+          if git fetch origin "$branch" 2>/dev/null; then
+            parent="origin/$branch"
+            git switch "$branch"
+          else
+            git switch -c "$branch"
+          fi
+
           git subrepo pull "$VENDORED_PATH"
+
+          # Check for changes to determine if we need to create/update PRs
+          changes=$(git rev-list --count "$parent".."$branch")
+          echo "changes=$changes" | tee -a "$GITHUB_ENV"
       - name: Create pull request
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN_NEXTSTRAIN_BOT_REPO }}
+          # Define env to appease shellcheck
+          changes: ${{ env.changes }}
           title: '[bot] Update ${{ env.VENDORED_PATH }}'
           body: |
             This PR was automatically created by https://github.com/nextstrain/shared/actions/runs/${{ github.run_id }}
             to update the vendored subrepo in ${{ env.VENDORED_PATH }}.
+
+            Subrepo changes may break workflows and require manual updates to
+            fix errors. It is safe to add manual updates directly to this PR
+            since they will not be overwritten by future automatic updates.
         run: |
-          default_branch=$(git remote show origin | sed -n '/HEAD branch/s/.*: //p')
-          changes=$(git rev-list --count "$default_branch".."$branch")
           if [[ "$changes" == "1" ]]; then
-            git push --force origin HEAD
+            git push origin HEAD
             pr_url=$(gh pr list --head "$branch" --json url | jq -r '.[0].url')
 
             if [[ "$pr_url" == "null" ]]; then
