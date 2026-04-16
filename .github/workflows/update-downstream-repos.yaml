@@ -76,6 +76,9 @@ jobs:
         uses: actions/checkout@v6
         with:
           repository: ${{ matrix.repo }}
+          # Fetch all history since `git subrepo pull` needs to check history
+          # to validate the parent commit
+          fetch-depth: 0
           token: ${{ secrets.GH_TOKEN_NEXTSTRAIN_BOT_REPO }}
         # Checkout git-subrepo _after_ the downstream repo to ensure that we
         # keep it in a path within the downstream repo that does not interfere
@@ -93,7 +96,7 @@ jobs:
           git config user.email "${{ vars.GIT_USER_EMAIL_NEXTSTRAIN_BOT }}"
 
           git switch -c "$branch"
-          git subrepo pull "$VENDORED_PATH" --force
+          git subrepo pull "$VENDORED_PATH"
       - name: Create pull request
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN_NEXTSTRAIN_BOT_REPO }}
@@ -101,8 +104,6 @@ jobs:
           body: |
             This PR was automatically created by https://github.com/nextstrain/shared/actions/runs/${{ github.run_id }}
             to update the vendored subrepo in ${{ env.VENDORED_PATH }}.
-
-            Subrepo updates were made with the `--force` flag so it overwrites any local changes in the subrepo.
         run: |
           default_branch=$(git remote show origin | sed -n '/HEAD branch/s/.*: //p')
           changes=$(git rev-list --count "$default_branch".."$branch")
