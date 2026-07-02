@@ -58,7 +58,10 @@ main() {
         wc -l < "$workdir/count.fifo" > "$workdir/count" &
         local count_pid=$!
         tee "$workdir/hash.fifo" "$workdir/count.fifo" < "$src" | "${compressor[@]}" > "$tmp"
-        wait "$hash_pid" "$count_pid"
+        # Wait one at a time: `wait a b` returns only b's status, so a failing
+        # hasher would be masked from set -e (uploading with a bad sha256sum).
+        wait "$hash_pid"
+        wait "$count_pid"
         src_hash="$(cat "$workdir/hash")"
         src_record_count="$(cat "$workdir/count")"
     else
