@@ -26,6 +26,11 @@ main() {
     local dst="${2:?A destination s3:// URL is required as the second argument.}"
     local cloudfront_domain="${3:-}"
 
+    # Fail early if $src is unreadable. Otherwise `tee < "$src"` below fails, but
+    # the background hasher/counter -- already blocked opening their fifos -- get
+    # no writer and hang instead of being cleaned up.
+    [[ -r "$src" ]] || { echo "upload-to-s3: cannot read source file: $src" >&2; exit 1; }
+
     local s3path="${dst#s3://}"
     local bucket="${s3path%%/*}"
     local key="${s3path#*/}"
