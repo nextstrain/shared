@@ -1,10 +1,25 @@
 """
-This part of the workflow merges inputs based on what is defined in the config.
+Rules to merge inputs based on what is defined in the config.
 
-OUTPUTS:
+RULES:
 
-    metadata  = results/metadata.tsv
-    sequences = results/sequences.fasta
+    merge_metadata   - merges metadata across all inputs
+    merge_sequences  - merges sequences across all inputs
+
+Output paths are workflow-specific. Consume this file as a Snakemake module
+and override the `output:` block of each rule, e.g.:
+
+    module merge_inputs:
+        snakefile: "path/to/shared/vendored/snakemake/merge_inputs.smk"
+        config: config
+
+    use rule merge_metadata from merge_inputs with:
+        output:
+            metadata = "results/metadata.tsv"
+
+    use rule merge_sequences from merge_inputs with:
+        output:
+            sequences = "results/sequences.fasta"
 
 The config dict is expected to have a top-level `inputs` list that defines the
 separate inputs' name, metadata, and sequences. Optionally, the config can have
@@ -31,12 +46,31 @@ The `id_field` key for each input is passed through to `augur merge
 Supports any of the compression formats that are supported by `augur read-file`,
 see <https://docs.nextstrain.org/projects/augur/page/usage/cli/read-file.html>
 
-NOTE: The included rules are written for workflows that do not use wildcards
-for defining inputs such as zika. You will need to edit the rules to support wildcards.
+WILDCARDS:
+
+The default outputs are are written for workflows that do not use wildcards.
+Workflows that need wildcards can add them as shown below.
 
 1. If your workflow needs wildcards for both metadata and sequences,
 e.g. serotypes for dengue, then you will need to edit the `output`, `log`, and
 `benchmark` paths of the metadata and sequences rules.
+
+    use rule merge_metadata from merge_inputs with:
+        output:
+            metadata = "results/{serotype}/metadata.tsv"
+        log:
+            "logs/{serotype}/merge_metadata.txt"
+        benchmark:
+            "benchmarks/{serotype}/merge_metadata.txt"
+
+    use rule merge_sequences from merge_inputs with:
+        output:
+            sequences = "results/{serotype}/sequences.fasta"
+        log:
+            "logs/{serotype}/merge_sequences.txt"
+        benchmark:
+            "benchmarks/{serotype}/merge_sequences.txt"
+
 The wildcards can then be directly used in the config for inputs:
 
 ```yaml
@@ -61,6 +95,11 @@ inputs:
       sequences: s3://nextstrain-data-private/files/workflows/avian-flu/{segment}/sequences.fasta.zst
 ```
 """
+# These include statements are required since any included variables/functions
+# from calling workflows are not visible inside this module.
+include: "config.smk"
+include: "remote_files.smk"
+
 from pathlib import Path
 
 
