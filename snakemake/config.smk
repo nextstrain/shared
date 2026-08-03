@@ -14,54 +14,55 @@ from typing import Optional
 from textwrap import dedent, indent
 
 
-# Set search paths
-if "AUGUR_SEARCH_PATHS" in os.environ:
-    print(dedent(f"""\
-        Using existing search paths in AUGUR_SEARCH_PATHS:
+def set_search_paths():
+    """Set the environment variable used for search paths."""
+    if "AUGUR_SEARCH_PATHS" in os.environ:
+        print(dedent(f"""\
+            Using existing search paths in AUGUR_SEARCH_PATHS:
 
-            {os.environ["AUGUR_SEARCH_PATHS"]!r}
-        """), file=sys.stderr)
-else:
-    search_paths = [
-        # User analysis directory
-        Path.cwd(),
+                {os.environ["AUGUR_SEARCH_PATHS"]!r}
+            """), file=sys.stderr)
+    else:
+        search_paths = [
+            # User analysis directory
+            Path.cwd(),
 
-        # Workflow defaults folder
-        Path(workflow.basedir) / "defaults",
+            # Workflow defaults folder
+            Path(workflow.basedir) / "defaults",
 
-        # Workflow root (contains Snakefile)
-        Path(workflow.basedir),
-    ]
+            # Workflow root (contains Snakefile)
+            Path(workflow.basedir),
+        ]
 
-    # This should work for majority of workflows, but we could consider doing a
-    # more thorough search for the nextstrain-pathogen.yaml. This would likely
-    # replicate how CLI searches for the root.¹
-    # ¹ <https://github.com/nextstrain/cli/blob/d5e184c5/nextstrain/cli/command/build.py#L413-L420>
-    repo_root = Path(workflow.basedir) / ".."
-    if (repo_root / "nextstrain-pathogen.yaml").is_file():
-        search_paths.extend([
-            # Pathogen repo root
-            repo_root,
-        ])
+        # This should work for majority of workflows, but we could consider doing a
+        # more thorough search for the nextstrain-pathogen.yaml. This would likely
+        # replicate how CLI searches for the root.¹
+        # ¹ <https://github.com/nextstrain/cli/blob/d5e184c5/nextstrain/cli/command/build.py#L413-L420>
+        repo_root = Path(workflow.basedir) / ".."
+        if (repo_root / "nextstrain-pathogen.yaml").is_file():
+            search_paths.extend([
+                # Pathogen repo root
+                repo_root,
+            ])
 
-    seen = set()
-    normalized_search_paths = []
-    for path in search_paths:
-        # Skip paths that are not directories
-        if not path.is_dir():
-            continue
+        seen = set()
+        normalized_search_paths = []
+        for path in search_paths:
+            # Skip paths that are not directories
+            if not path.is_dir():
+                continue
 
-        # Resolve to absolute paths
-        resolved = path.resolve()
+            # Resolve to absolute paths
+            resolved = path.resolve()
 
-        # Skip duplicate paths (e.g. often the CWD == workflow.basedir)
-        if resolved in seen:
-            continue
+            # Skip duplicate paths (e.g. often the CWD == workflow.basedir)
+            if resolved in seen:
+                continue
 
-        seen.add(resolved)
-        normalized_search_paths.append(resolved)
+            seen.add(resolved)
+            normalized_search_paths.append(resolved)
 
-    os.environ["AUGUR_SEARCH_PATHS"] = ":".join(map(str, normalized_search_paths))
+        os.environ["AUGUR_SEARCH_PATHS"] = ":".join(map(str, normalized_search_paths))
 
 
 class InvalidConfigError(Exception):
