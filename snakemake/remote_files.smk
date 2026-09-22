@@ -9,6 +9,10 @@ to check these ourselves to improve UX here.
 """
 
 from urllib.parse import urlparse
+from snakemake.utils import min_version
+
+# Minimum Snakemake version needed for the storage plugins
+min_version("8.0.0")
 
 # Keep a list of known public buckets, which we'll allow uncredentialled (unsigned) access to
 # We could make this config-definable in the future
