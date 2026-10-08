@@ -33,14 +33,14 @@ def is_online(host="8.8.8.8", port=53, timeout=3) -> bool:
 
 # Determine whether workflow should try to fetch or revalidate remote input
 # files based on prioritization order:
-#     1. Per workflow config parameter `use_remote_files`
-#     2. Environment variable `NEXTSTRAIN_REMOTE_FILES`
+#     1. Environment variable `NEXTSTRAIN_REMOTE_FILES`
+#     2. Per workflow config parameter `use_remote_files`
 #     3. Whether the workflow has network connection
 USE_REMOTE_FILES = True
-if "use_remote_files" in config:
-    USE_REMOTE_FILES = bool(config["use_remote_files"])
-elif "NEXTSTRAIN_USE_REMOTE_FILES" in os.environ:
+if "NEXTSTRAIN_USE_REMOTE_FILES" in os.environ:
     USE_REMOTE_FILES = bool(os.environ["NEXTSTRAIN_USE_REMOTE_FILES"])
+elif "use_remote_files" in config:
+    USE_REMOTE_FILES = bool(config["use_remote_files"])
 else:
     USE_REMOTE_FILES = is_online()
 
